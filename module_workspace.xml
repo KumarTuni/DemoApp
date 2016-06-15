@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_workspace" default="compile.module.workspace">
+  <dirname property="module.workspace.basedir" file="${ant.file.module_workspace}"/>
+  
+  <property name="module.jdk.home.workspace" value="${jdk.home.4.6.0}"/>
+  <property name="module.jdk.bin.workspace" value="${jdk.bin.4.6.0}"/>
+  <property name="module.jdk.classpath.workspace" value="jdk.classpath.4.6.0"/>
+  
+  <property name="compiler.args.workspace" value="-encoding UTF-8 -source 1.6 -target 1.6 ${compiler.args}"/>
+  
+  <property name="workspace.output.dir" value="${module.workspace.basedir}/out/production/workspace"/>
+  <property name="workspace.testoutput.dir" value="${module.workspace.basedir}/out/test/workspace"/>
+  
+  <path id="workspace.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="workspace.module.production.classpath">
+    <path refid="${module.jdk.classpath.workspace}"/>
+  </path>
+  
+  <path id="workspace.runtime.production.module.classpath">
+    <pathelement location="${workspace.output.dir}"/>
+  </path>
+  
+  <path id="workspace.module.classpath">
+    <path refid="${module.jdk.classpath.workspace}"/>
+    <pathelement location="${workspace.output.dir}"/>
+  </path>
+  
+  <path id="workspace.runtime.module.classpath">
+    <pathelement location="${workspace.testoutput.dir}"/>
+    <pathelement location="${workspace.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.workspace">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.workspace">
+    <patternset refid="excluded.from.module.workspace"/>
+  </patternset>
+  
+  <path id="workspace.module.sourcepath">
+    <dirset dir="${module.workspace.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.workspace" depends="compile.module.workspace.production,compile.module.workspace.tests" description="Compile module workspace"/>
+  
+  <target name="compile.module.workspace.production" depends="register.custom.compilers" description="Compile module workspace; production classes">
+    <mkdir dir="${workspace.output.dir}"/>
+    <javac2 destdir="${workspace.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.workspace}/javac">
+      <compilerarg line="${compiler.args.workspace}"/>
+      <bootclasspath refid="workspace.module.bootclasspath"/>
+      <classpath refid="workspace.module.production.classpath"/>
+      <src refid="workspace.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.workspace"/>
+    </javac2>
+    
+    <copy todir="${workspace.output.dir}">
+      <fileset dir="${module.workspace.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.workspace.tests" depends="register.custom.compilers,compile.module.workspace.production" description="compile module workspace; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.workspace" description="cleanup module">
+    <delete dir="${workspace.output.dir}"/>
+    <delete dir="${workspace.testoutput.dir}"/>
+  </target>
+</project>
